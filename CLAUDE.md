@@ -94,6 +94,27 @@ The project includes these dev tools in pyproject.toml:
 
 # Rules
 
+## Python Execution - CRITICAL
+
+**IMPORTANT**: Always use `uv run` to execute Python commands. NEVER use plain `python` command.
+
+**Why**: The project uses `uv` which manages the project's `.venv` virtual environment. Using bare `python` may invoke the system Python or wrong version, causing import errors and missing dependencies.
+
+**Correct**:
+```bash
+uv run python -m src.main
+uv run python -c "from src.agents.return_agent import ReturnAgent"
+uv run pytest tests/
+uv run python -m py_compile src/agents/return_agent.py
+```
+
+**WRONG** (do not do this):
+```bash
+python -m src.main                      # ❌ Wrong Python interpreter
+python -c "from src..."                 # ❌ Missing project dependencies
+pytest tests/                           # ❌ Tests may fail
+```
+
 ## Documentation Lookups
 
 *   **LangChain Questions**: For any question related to "langchain", "langgraph", "langsmith", or "LCEL", automatically invoke the `docs-langchain` MCP server to find the answer.
