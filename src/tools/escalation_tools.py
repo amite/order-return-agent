@@ -59,8 +59,8 @@ class EscalateToHumanTool(BaseTool):
             return f"Escalation reason: {reason}. No conversation history available."
 
         # Extract key information
-        user_messages = [log for log in conversation_logs if log.message_type == MessageType.USER]
-        tool_calls = [log for log in conversation_logs if log.message_type == MessageType.TOOL]
+        user_messages = [log for log in conversation_logs if str(log.message_type) == MessageType.USER]
+        tool_calls = [log for log in conversation_logs if str(log.message_type) == MessageType.TOOL]
 
         # Create summary
         summary_parts = []
@@ -109,18 +109,23 @@ class EscalateToHumanTool(BaseTool):
                 # 4. Mark any related RMAs as escalated
                 # Find RMAs mentioned in conversation meta_data
                 for log in conversation_logs:
-                    if log.meta_data and "rma_number" in log.meta_data:
-                        try:
-                            import json
-                            meta_data = json.loads(log.meta_data)
-                            rma_number = meta_data.get("rma_number")
-                            if rma_number:
-                                rma = session.query(RMA).filter(RMA.rma_number == rma_number).first()
-                                if rma:
-                                    rma.escalated = True
-                                    rma.escalation_reason = reason
-                        except:
-                            pass
+                    # Extract meta_data value (type checker sees Column, but runtime is str)
+                    meta_data_value = getattr(log, 'meta_data', None)
+                    if meta_data_value is not None:
+                        meta_data_str = str(meta_data_value)
+                        if "rma_number" in meta_data_str:
+                            try:
+                                import json
+                                meta_data = json.loads(meta_data_str)
+                                rma_number = meta_data.get("rma_number")
+                                if rma_number:
+                                    rma = session.query(RMA).filter(RMA.rma_number == rma_number).first()
+                                    if rma is not None:
+                                        # Type checker sees Column, but runtime is Python value
+                                        setattr(rma, 'escalated', True)
+                                        setattr(rma, 'escalation_reason', reason)
+                            except:
+                                pass
 
                 # 5. Log escalation
                 escalation_log = ConversationLog(

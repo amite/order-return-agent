@@ -83,7 +83,7 @@ class GetOrderDetailsTool(BaseTool):
                         message=f"Found order {order_id} placed on {order.order_date.strftime('%B %d, %Y')}.",
                     ).model_dump_json()
 
-                elif email:
+                else:  # email must be truthy here since we validated at least one is provided
                     # Lookup by email
                     orders = (
                         session.query(Order)
@@ -122,6 +122,13 @@ class GetOrderDetailsTool(BaseTool):
                             orders=order_schemas,
                             message=f"Found {len(orders)} orders for {email}. Please specify which order you'd like to return items from.",
                         ).model_dump_json()
+                
+                # This should never be reached due to validation, but satisfies type checker
+                return GetOrderDetailsOutput(
+                    success=False,
+                    error="Unexpected error: neither order_id nor email provided",
+                    message="An unexpected error occurred. Please try again.",
+                ).model_dump_json()
 
         except Exception as e:
             logger.error(f"Error in GetOrderDetails: {e}")

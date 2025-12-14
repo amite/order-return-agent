@@ -4,7 +4,7 @@ import json
 import random
 import time
 from datetime import datetime
-from typing import List
+from typing import List, cast
 
 from langchain.tools import BaseTool
 from loguru import logger
@@ -96,7 +96,8 @@ class CreateRMATool(BaseTool):
                 session.add(rma)
 
                 # 5. Update order status
-                order.status = OrderStatus.RETURN_INITIATED
+                # Type checker sees Column, but runtime is Python value
+                setattr(order, 'status', OrderStatus.RETURN_INITIATED)
 
                 session.commit()
                 session.refresh(rma)
@@ -106,7 +107,7 @@ class CreateRMATool(BaseTool):
                 return CreateRMAOutput(
                     success=True,
                     rma_number=rma_number,
-                    rma_id=rma.id,
+                    rma_id=cast(int, rma.id),
                     message=f"RMA {rma_number} created successfully. Refund amount: ${refund_amount:.2f}",
                 ).model_dump_json()
 
