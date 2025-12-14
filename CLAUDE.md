@@ -94,4 +94,21 @@ The project includes these dev tools in pyproject.toml:
 
 # Rules
 
-*   For any question related to "langchain", "langgraph", "langsmith", or "LCEL", automatically invoke the `docs-langchain` MCP server to find the answer.
+## Documentation Lookups
+
+*   **LangChain Questions**: For any question related to "langchain", "langgraph", "langsmith", or "LCEL", automatically invoke the `docs-langchain` MCP server to find the answer.
+    - Example: Import paths, API usage, integration patterns
+    - Use: `mcp__docs-langchain__SearchDocsByLangChain` tool
+    - When: Before implementing any LangChain feature
+
+*   **Library Documentation**: For any other library (numpy, pandas, fastapi, etc.), consider using `mcp__context7__resolve-library-id` and `mcp__context7__get-library-docs` to get up-to-date documentation.
+    - Check official docs first before relying on memory
+    - Especially useful for: version-specific features, API changes
+    - When: Integrating new libraries or uncertain about API
+
+## Ollama Commands
+
+*   All Ollama commands must be executed from `/home/amite/code/docker/ollama-docker/` directory:
+    ```bash
+    cd /home/amite/code/docker/ollama-docker && docker compose exec ollama ollama list
+    ```

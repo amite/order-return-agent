@@ -4,6 +4,31 @@
 
 ---
 
+## 🔍 How to Find Import Information (For AI Developers)
+
+**IMPORTANT**: When implementing LangChain features, always use the `docs-langchain` MCP server:
+
+```python
+# ✅ DO THIS FIRST
+# Use: mcp__docs-langchain__SearchDocsByLangChain
+# Query: "OllamaEmbeddings import"
+# Result: Official documentation with correct import path
+```
+
+This prevents the import issues documented in this project.
+
+For other libraries, use:
+- `mcp__context7__resolve-library-id` - Find library
+- `mcp__context7__get-library-docs` - Get official docs
+
+**Benefits**:
+- Always get latest, official information
+- Avoid deprecated imports
+- Discover version-specific features
+- Prevent knowledge-base hallucinations
+
+---
+
 ## The Problem
 
 LangChain has been refactored into multiple packages with different import paths. Using old imports causes:

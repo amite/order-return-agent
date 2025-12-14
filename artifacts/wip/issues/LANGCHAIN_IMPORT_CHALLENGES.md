@@ -10,6 +10,30 @@ During implementation of the RAG knowledge base system, several challenges arose
 
 ---
 
+## 🤖 Note for AI Developers (Claude Code, etc.)
+
+**Always use official documentation lookups when implementing LangChain features:**
+
+1. **For LangChain questions**: Use `mcp__docs-langchain__SearchDocsByLangChain`
+   - Query: Your question about imports, APIs, or features
+   - Get: Official LangChain documentation
+   - This prevents the issues documented below
+
+2. **For other libraries**: Use `mcp__context7__resolve-library-id` and `mcp__context7__get-library-docs`
+   - Always check official docs first
+   - Especially important for version-specific features
+   - Prevents knowledge cutoff issues
+
+**If these rules were followed during Phase 1 implementation:**
+- Issue #1 would have been caught immediately (Document import path)
+- Issue #2 would have shown deprecation warnings upfront (OllamaEmbeddings)
+- Issue #3 would have clarified langchain_chroma doesn't exist
+- All 4 hours of troubleshooting could have been prevented
+
+**Going Forward**: Use official documentation tools FIRST, before implementing.
+
+---
+
 ## Issue #1: Incorrect Document Import Path
 
 ### Problem Statement
