@@ -42,6 +42,10 @@ data/processed/*
 !data/raw/.gitkeep
 !data/processed/.gitkeep
 
+# Database and Vector Store files (these are generated/cached)
+*.db
+data/chroma_db/
+
 # Notebooks
 .ipynb_checkpoints/
 
