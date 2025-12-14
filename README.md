@@ -119,6 +119,42 @@ Example log entry:
 2025-12-14 10:15:36 | INFO     | Conversation logged to database
 ```
 
+### Conversation History Analysis
+
+Query conversation logs and sessions using the provided nushell script:
+
+```bash
+# Source the script
+source scripts/order_returns_agent.session.nu
+
+# View most recent conversation messages (last 50)
+get-conversation-logs
+
+# View all messages from a specific session
+get-session-logs a1b2c3d4  # Uses first 8 chars of session UUID
+
+# List all conversation sessions with stats
+get-sessions
+
+# Get summary for a specific session (message counts, duration)
+get-session-summary a1b2c3d4
+```
+
+**Available Commands:**
+
+| Command | Purpose | Parameters |
+|---------|---------|-----------|
+| `get-conversation-logs` | Show recent messages from all sessions | `[limit: int = 50]` |
+| `get-session-logs <session-id>` | View chronological conversation | `<session-id>, [limit: int = 100]` |
+| `get-sessions` | List all sessions with stats | `[limit: int = 20]` |
+| `get-session-summary <session-id>` | Session statistics (user/assistant counts, duration) | `<session-id>` |
+
+**Output Format:**
+- Session IDs are abbreviated to first 8 characters for readability
+- Message content is truncated to 80 characters for overview (full content in database)
+- Timestamps help track conversation flow and timing
+- Perfect for auditing, debugging, and understanding agent behavior
+
 ### Troubleshooting
 
 **Error: "Connection refused" when starting agent**

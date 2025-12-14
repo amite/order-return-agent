@@ -7,6 +7,10 @@
 #   get-schemas
 #   get-schema-info
 #   top-customers
+#   get-conversation-logs
+#   get-session-logs <session-id>
+#   get-sessions
+#   get-session-summary <session-id>
 
 # Database path constant
 const DB_PATH = "./data/order_return.db"
@@ -85,5 +89,42 @@ def get-rmas [
     limit: int = 100
 ] {
     let sql = ('SELECT * FROM rmas ORDER BY created_at DESC LIMIT ' + ($limit | into string) + ';')
+    open $DB_PATH | query db $sql
+}
+
+# Get conversation logs from all sessions (most recent first)
+# Usage: get-conversation-logs [limit: int]
+def get-conversation-logs [
+    limit: int = 50
+] {
+    let sql = ('SELECT id, substr(session_id, 1, 8) as session_id, message_type, substr(content, 1, 80) as content_preview, created_at FROM conversation_logs ORDER BY created_at DESC LIMIT ' + ($limit | into string) + ';')
+    open $DB_PATH | query db $sql
+}
+
+# Get conversation logs for a specific session (chronological order)
+# Usage: get-session-logs <session-id> [limit: int]
+def get-session-logs [
+    session_id: string,
+    limit: int = 100
+] {
+    let sql = ('SELECT id, substr(session_id, 1, 8) as session_id, message_type, substr(content, 1, 80) as content_preview, created_at FROM conversation_logs WHERE session_id LIKE "' + $session_id + '%" ORDER BY created_at ASC LIMIT ' + ($limit | into string) + ';')
+    open $DB_PATH | query db $sql
+}
+
+# Get all unique conversation sessions
+# Usage: get-sessions [limit: int]
+def get-sessions [
+    limit: int = 20
+] {
+    let sql = ('SELECT substr(session_id, 1, 8) as session_id, COUNT(*) as message_count, MIN(created_at) as started_at, MAX(created_at) as ended_at FROM conversation_logs GROUP BY session_id ORDER BY MAX(created_at) DESC LIMIT ' + ($limit | into string) + ';')
+    open $DB_PATH | query db $sql
+}
+
+# Get summary statistics for a specific session
+# Usage: get-session-summary <session-id>
+def get-session-summary [
+    session_id: string
+] {
+    let sql = ('SELECT substr(session_id, 1, 8) as session_id, SUM(CASE WHEN message_type = "user" THEN 1 ELSE 0 END) as user_messages, SUM(CASE WHEN message_type = "assistant" THEN 1 ELSE 0 END) as assistant_messages, COUNT(*) as total_messages, MIN(created_at) as started_at, MAX(created_at) as ended_at FROM conversation_logs WHERE session_id LIKE "' + $session_id + '%" GROUP BY session_id;')
     open $DB_PATH | query db $sql
 }
