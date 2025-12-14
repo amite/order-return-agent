@@ -1,7 +1,7 @@
 """Return eligibility checking tool - CRITICAL COMPONENT"""
 
 from datetime import datetime
-from typing import List
+from typing import List, cast
 
 from langchain.tools import BaseTool
 from loguru import logger
@@ -167,11 +167,11 @@ class CheckEligibilityTool(BaseTool):
                 # Check VIP extended policy for Gold/Platinum customers
                 if customer.loyalty_tier in ["Gold", "Platinum"]:
                     vip_policy = next(
-                        (p for p in policies if p.category == "VIP Extended"), None
+                        (p for p in policies if str(p.category) == "VIP Extended"), None
                     )
-                    if vip_policy:
+                    if vip_policy is not None:
                         applicable_policy = vip_policy
-                        max_window = vip_policy.return_window_days
+                        max_window = cast(int, vip_policy.return_window_days)
 
                 # If no VIP policy or not VIP customer, check category policies
                 if not applicable_policy:
@@ -180,21 +180,23 @@ class CheckEligibilityTool(BaseTool):
                         if category:
                             # Find policy for this category
                             category_policy = next(
-                                (p for p in policies if p.category == category), None
+                                (p for p in policies if str(p.category) == str(category)), None
                             )
-                            if category_policy:
-                                if category_policy.return_window_days > max_window:
-                                    max_window = category_policy.return_window_days
+                            if category_policy is not None:
+                                # Extract value from loaded object (type checker sees Column, but runtime is int)
+                                window_days = cast(int, category_policy.return_window_days)
+                                if window_days > max_window:
+                                    max_window = window_days
                                     applicable_policy = category_policy
 
                 # Fallback to general policy
                 if not applicable_policy:
                     general_policy = next(
-                        (p for p in policies if p.category == "General"), None
+                        (p for p in policies if str(p.category) == "General"), None
                     )
-                    if general_policy:
+                    if general_policy is not None:
                         applicable_policy = general_policy
-                        max_window = general_policy.return_window_days
+                        max_window = cast(int, general_policy.return_window_days)
 
                 if not applicable_policy:
                     return CheckEligibilityOutput(
@@ -210,7 +212,7 @@ class CheckEligibilityTool(BaseTool):
                     return CheckEligibilityOutput(
                         eligible=False,
                         reason_code=EligibilityReasonCode.TIME_EXP,
-                        policy_applied=applicable_policy.policy_name,
+                        policy_applied=str(applicable_policy.policy_name),
                         message=f"Order is {days_since_order} days old. Return window is {max_window} days.",
                         days_since_order=days_since_order,
                     ).model_dump_json()
@@ -219,7 +221,7 @@ class CheckEligibilityTool(BaseTool):
                 return CheckEligibilityOutput(
                     eligible=True,
                     reason_code=EligibilityReasonCode.APPROVED,
-                    policy_applied=applicable_policy.policy_name,
+                    policy_applied=str(applicable_policy.policy_name),
                     message=f"Return approved under {applicable_policy.policy_name} ({max_window}-day window).",
                     days_since_order=days_since_order,
                     requires_manual_review=False,
