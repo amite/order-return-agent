@@ -4,13 +4,15 @@ An AI customer service agent for processing order returns using LangChain, RAG, 
 
 ## Project Overview
 
-**Status**: Phase 1 Complete ✅ | Phase 2 Ready ⏳
+**Status**: Phase 1 Complete ✅ | Phase 2 Complete ✅ | Phase 3 Complete ✅ | Phase 4 Ready ⏳
 
-This is a production-grade Python project implementing a conversational order return agent with:
+This is a production-grade Python project implementing a fully functional conversational order return agent with:
 - **Database Layer**: SQLite with 6 tables (Customer, Order, OrderItem, ReturnPolicy, RMA, ConversationLog)
 - **6 Business Tools**: GetOrderDetails, CheckEligibility, CreateRMA, GenerateReturnLabel, SendEmail, EscalateToHuman
 - **RAG System**: ChromaDB vector store with Ollama embeddings for policy retrieval
-- **LLM Integration**: Local Ollama with qwen2.5 chat model
+- **Agent Orchestration**: LangChain v1 agent with tool calling and conversation persistence
+- **Interactive CLI**: Multi-turn conversation with session management and commands
+- **LLM Integration**: Local Ollama with qwen2.5:3b chat model
 - **Comprehensive Documentation**: Implementation plan, lessons learned, troubleshooting guides
 
 ## Quick Start
@@ -22,11 +24,24 @@ This is a production-grade Python project implementing a conversational order re
 uv sync
 
 # Ensure Ollama is running
-cd /home/amite/code/docker/ollama-docker && docker compose up
+cd /home/amite/code/docker/ollama-docker && docker compose up -d
 
-# Run the application (Phase 2+)
+# Verify models are available
+docker compose exec ollama ollama list
+```
+
+### Running the Agent
+
+```bash
+# Start the interactive CLI agent
 uv run python -m src.main
 ```
+
+The agent will automatically:
+- Initialize the database and seed sample data (first run only)
+- Ingest knowledge base documents into the RAG system
+- Create a session ID for conversation tracking
+- Display welcome screen with available commands
 
 ### Testing
 
@@ -41,11 +56,102 @@ uv run pytest --cov=src
 uv run pytest tests/test_rag.py -v
 ```
 
+## Using the CLI
+
+### Starting a Conversation
+
+```bash
+$ uv run python -m src.main
+
+======================================================================
+  ORDER RETURN AGENT - Customer Service Assistant
+======================================================================
+
+Welcome! I'm here to help you process your order return.
+
+To get started, please provide:
+  • Your order number, OR
+  • Your email address
+
+Commands:
+  /exit  - End the conversation
+  /help  - Show this message again
+  /reset - Start a new conversation
+
+----------------------------------------------------------------------
+
+You: I'd like to return order 77893
+Agent: [Agent responds with order details and begins conversation flow...]
+```
+
+### Available Commands
+
+| Command | Purpose | Example |
+|---------|---------|---------|
+| `/exit` | End conversation and save session | Type `/exit` to quit |
+| `/help` | Show welcome screen and commands | Type `/help` to see instructions |
+| `/reset` | Start a new conversation session | Type `/reset` for fresh session |
+
+### Session Management
+
+- Each conversation gets a unique **session ID** (UUID)
+- All messages are logged to the database in the **ConversationLog** table
+- Sessions persist across conversations for audit trails
+- You can start a new session with `/reset`
+- Conversations are saved even on errors or interruptions
+
+### Logging
+
+The agent creates logs in two places:
+
+**Console Output**: Pretty-printed agent responses and status messages
+
+**File Logging** (`logs/agent.log`):
+- Debug-level logging for all operations
+- Timestamp, level, and message for each log entry
+- Auto-rotates at 500 MB
+- Useful for troubleshooting and monitoring
+
+Example log entry:
+```
+2025-12-14 10:15:32 | INFO     | [session-uuid] Processing user input
+2025-12-14 10:15:35 | DEBUG    | Agent created RMA #RMA-12345
+2025-12-14 10:15:36 | INFO     | Conversation logged to database
+```
+
+### Troubleshooting
+
+**Error: "Connection refused" when starting agent**
+```bash
+# Check if Ollama is running
+docker ps | grep ollama
+
+# If not running, start it:
+cd /home/amite/code/docker/ollama-docker && docker compose up -d
+```
+
+**Error: "Model not found"**
+```bash
+# Pull required models
+docker compose exec ollama ollama pull qwen2.5:3b
+docker compose exec ollama ollama pull mxbai-embed-large:latest
+```
+
+**Error: "Database locked"**
+- Delete the corrupted database and restart:
+```bash
+rm -f data/order_return.db
+# Next run will recreate and seed the database
+```
+
 ## Project Structure
 
 ```
 src/
-├── main.py                 # Entry point (placeholder, Phase 3)
+├── main.py                 # Interactive CLI entry point ✅ (Phase 3)
+├── agents/
+│   ├── __init__.py
+│   └── return_agent.py    # ReturnAgent orchestration (373 lines) ✅ (Phase 2)
 ├── db/
 │   ├── schema.py          # Database models (6 tables)
 │   ├── connection.py      # Database session management
@@ -63,9 +169,7 @@ src/
 │   └── escalation_tools.py # EscalateToHuman tool
 ├── rag/
 │   ├── __init__.py
-│   └── knowledge_base.py  # RAG system (Phase 1 ✅)
-├── agents/
-│   └── __init__.py        # Agent orchestration (Phase 2)
+│   └── knowledge_base.py  # RAG system (262 lines) ✅ (Phase 1)
 └── config/
     ├── settings.py        # Configuration management
     └── prompts.py         # System prompts and templates
@@ -138,32 +242,64 @@ artifacts/
 - [x] **SendEmail** - 3 Jinja2 templates (approved, rejected, label_ready)
 - [x] **EscalateToHuman** - Escalation ticket creation
 
+### Phase 2: Agent Orchestration ✅
+- [x] **ReturnAgent Class** (`src/agents/return_agent.py` - 373 lines)
+  - LLM integration (ChatOllama with qwen2.5:3b)
+  - Tool orchestration (all 6 tools registered and callable)
+  - RAG knowledge base integration with health checks
+  - Conversation persistence to ConversationLog table
+  - Session management with UUID tracking
+- [x] **LangChain v1 API Implementation**
+  - `create_agent` with tool calling (not deprecated `create_react_agent`)
+  - HumanMessage format for conversation
+  - Max iterations (15) and timeout (120s) configuration
+  - Response extraction from LangChain v1 format
+- [x] **Error Handling & Recovery**
+  - Tool execution error catching
+  - Categorized error messages (timeout, database, model)
+  - Graceful degradation with user-friendly fallbacks
+- [x] **Helper Methods**
+  - `_format_response()` - Clean up agent output
+  - `_handle_tool_errors()` - Error categorization
+  - `_log_conversation()` - Conversation persistence
+  - `get_conversation_history()` - Session history retrieval
+  - `escalate()` - Human agent handoff
+
+### Phase 3: Main Application & CLI ✅
+- [x] **Interactive CLI** (`src/main.py` - 138 lines)
+  - Welcome screen with instructions
+  - Multi-turn conversation loop with session ID
+  - Commands: `/exit`, `/help`, `/reset`
+  - Pretty-printed agent responses
+- [x] **Database Initialization**
+  - Automatic schema creation via SQLAlchemy
+  - Auto-seeding with mock data on first run
+  - Existence checks to prevent re-seeding
+- [x] **Logging Configuration**
+  - Dual logging: console (user output) + file (debug)
+  - Console formatter for readability
+  - File logging to `logs/agent.log` with timestamps
+  - Log rotation at 500 MB
+- [x] **Error Handling**
+  - Database initialization errors
+  - Agent initialization errors with Ollama guidance
+  - Runtime errors with recovery
+  - Keyboard interrupt (Ctrl+C) handling
+  - Session persistence on error
+
 ## ⏳ In Progress / Upcoming
 
-### Phase 2: Agent Orchestration (Ready to Start)
-- [ ] Create `src/agents/return_agent.py`
-- [ ] Initialize LangChain agent with tool calling
-- [ ] Integrate RAG for policy context during conversations
-- [ ] Implement 7-step conversation flow
-- [ ] Session and conversation state management
-- [ ] Tool error handling and retries
-- [ ] Write agent integration tests
-
-### Phase 3: Main Application & CLI (Planned)
-- [ ] Implement `src/main.py` - Interactive CLI
-- [ ] Database initialization on startup
-- [ ] RAG initialization and document ingestion
-- [ ] Session management and conversation logging
-- [ ] Help commands and user guidance
-- [ ] Graceful error handling and recovery
-
-### Phase 4: Testing & Validation (Planned)
+### Phase 4: Testing & Validation (Ready to Start)
 - [ ] Tool unit tests (all 6 tools)
+- [ ] Agent integration tests
 - [ ] End-to-end conversation tests
 - [ ] PRD scenario validation (Orders 77893, 45110, 10552)
-- [ ] Damaged item escalation workflow
-- [ ] Refund status checks
+  - Standard return (Order 77893)
+  - Expired window (Order 45110)
+  - Damaged item (Order 10552)
+- [ ] Code coverage reporting (target: >80%)
 - [ ] Performance and load testing
+- [ ] Conversation logging analysis
 
 ### Future Enhancements (Post-Phase 4)
 - [ ] Database persistence optimization
@@ -176,20 +312,24 @@ artifacts/
 
 ## Key Features
 
-### ✨ Implemented
+### ✨ Fully Implemented
 - **Deterministic Eligibility Checks**: All business logic in tools, not LLM
 - **Comprehensive Knowledge Base**: 4 documents with policies and guidelines
 - **Local LLM**: Ollama-based, no external API dependencies
 - **Vector Search**: ChromaDB for semantic policy retrieval
-- **Database-Backed**: SQLite with full ORM support
+- **Agent Orchestration**: LangChain v1 with tool calling and error recovery
+- **Interactive CLI**: Multi-turn conversation with session management
+- **Database-Backed**: SQLite with full ORM support and conversation logging
 - **Type-Safe**: Pydantic validation for all inputs/outputs
-- **Production Logging**: Loguru for structured logging
+- **Production Logging**: Loguru for structured logging (console + file)
+- **7-Step Flow**: Complete conversation flow from greeting to resolution
+- **Error Recovery**: Graceful fallbacks and escalation to human agents
 
-### 🚀 Ready to Implement
-- Agent orchestration with LangChain
-- 7-step conversation flow
-- RAG integration for policy explanations
-- Session persistence and conversation logging
+### 🚀 Ready to Test
+- Phase 4: Comprehensive test suite for all components
+- PRD scenario validation (3 test cases from requirements)
+- Code coverage reporting (target >80%)
+- End-to-end integration testing
 
 ## Configuration
 
@@ -304,17 +444,19 @@ Phase 1 (RAG): 27/27 tests passing ✅
 
 ## Team Resources
 
-### For Phase 2 Developers
-1. Read: [Implementation Plan - Phase 2](./artifacts/wip/plans/implementation-plan.md#phase-2-agent-orchestration-critical-path)
-2. Review: [Phase 1 Summary](./artifacts/wip/PHASE_1_SUMMARY.md) - Understand RAG API
-3. Bookmark: [Import Quick Reference](./artifacts/wip/issues/IMPORT_QUICK_REFERENCE.md) - For coding
-4. Reference: [src/rag/knowledge_base.py](./src/rag/knowledge_base.py) - Working example
+### For Phase 4 Developers (Testing & Validation)
+1. Read: [Implementation Plan - Phase 4](./artifacts/wip/plans/implementation-plan.md#phase-4-testing--validation-quality-assurance)
+2. Review: [Phase 2 Completion](./artifacts/wip/PHASE_2_COMPLETION.md) - Agent implementation details
+3. Reference: [Phase 2 README](./artifacts/wip/PHASE_2_README.md) - Quick start guide
+4. Study: [src/agents/return_agent.py](./src/agents/return_agent.py) - Agent implementation
+5. Bookmark: [CLAUDE.md](./CLAUDE.md) - Python execution rules
 
 ### For New Team Members
 1. Start with: [Implementation Plan](./artifacts/wip/plans/implementation-plan.md)
 2. Then: [Documentation Index](./artifacts/wip/DOCUMENTATION_INDEX.md)
-3. Bookmark: [CLAUDE.md](./CLAUDE.md) - Project rules
-4. Reference: Test files for implementation patterns
+3. Bookmark: [CLAUDE.md](./CLAUDE.md) - Project rules & Python execution
+4. Try it out: Run `uv run python -m src.main` to see the agent in action
+5. Reference: Test files and existing implementations for patterns
 
 ## Getting Help
 
@@ -341,24 +483,27 @@ Phase 1 (RAG): 27/27 tests passing ✅
    - 6 tools implemented and tested
    - 27/27 tests passing
    - ~2,700 lines of documentation
-   - Ready for Phase 2
+   - Knowledge base ready
 
-⏳ Phase 2: Agent Orchestration     READY
-   - All dependencies installed
-   - RAG system ready to integrate
-   - Documentation prepared
-   - Start date: Ready when needed
+✅ Phase 2: Agent Orchestration      COMPLETE
+   - ReturnAgent class (373 lines)
+   - LangChain v1 tool calling
+   - Conversation persistence
+   - Error handling & recovery
 
-⏳ Phase 3: Main Application         PLANNED
-   - Database layer complete
-   - CLI framework needed
-   - Session management needed
+✅ Phase 3: Main Application         COMPLETE
+   - Interactive CLI (138 lines)
+   - Database initialization
+   - Session management
+   - Logging (console + file)
 
-⏳ Phase 4: Testing & Validation    PLANNED
-   - PRD scenarios prepared
-   - Test infrastructure ready
+⏳ Phase 4: Testing & Validation     READY
+   - Tool unit tests
+   - Agent integration tests
+   - End-to-end scenarios
+   - Code coverage (target: >80%)
 ```
 
 ---
 
-**Last Updated**: 2025-12-14 | **Phase 1 Completion**: 100% ✅
+**Last Updated**: 2025-12-14 | **Phases Complete**: 1-3 (100%) ✅ | **Next**: Phase 4 Testing
