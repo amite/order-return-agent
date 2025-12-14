@@ -56,6 +56,39 @@ class CheckEligibilityTool(BaseTool):
 
     args_schema: type[BaseModel] = CheckEligibilityInput
 
+    def _find_policy_by_category(
+        self, policies: List[ReturnPolicy], category_name: str
+    ) -> ReturnPolicy | None:
+        """Find a policy by category name."""
+        return next(
+            (p for p in policies if str(p.category) == category_name), None
+        )
+
+    def _find_best_category_policy(
+        self, policies: List[ReturnPolicy], items_to_return: List[OrderItem]
+    ) -> tuple[ReturnPolicy | None, int]:
+        """Find the category policy with the maximum return window.
+        
+        Returns:
+            Tuple of (policy, max_window_days)
+        """
+        category_policies = []
+        for item in items_to_return:
+            if item.product_category is None:
+                continue
+            policy = self._find_policy_by_category(policies, str(item.product_category))
+            if policy:
+                category_policies.append(policy)
+        
+        if not category_policies:
+            return None, 0
+        
+        best_policy = max(
+            category_policies,
+            key=lambda p: cast(int, p.return_window_days)
+        )
+        return best_policy, cast(int, best_policy.return_window_days)
+
     def _run(
         self,
         order_id: str,
@@ -154,47 +187,32 @@ class CheckEligibilityTool(BaseTool):
                     ).model_dump_json()
 
                 # 7. Determine applicable return policy based on items
-                # Get all unique categories
-                categories = set([item.product_category for item in items_to_return if item.product_category])
-
                 # Fetch policies
                 policies = session.query(ReturnPolicy).filter(ReturnPolicy.is_active == True).all()
 
-                # Determine which policy applies
                 applicable_policy = None
                 max_window = 0
 
-                # Check VIP extended policy for Gold/Platinum customers
+                # Priority 1: VIP Extended policy for Gold/Platinum customers
                 if customer.loyalty_tier in ["Gold", "Platinum"]:
-                    vip_policy = next(
-                        (p for p in policies if str(p.category) == "VIP Extended"), None
-                    )
-                    if vip_policy is not None:
+                    vip_policy = self._find_policy_by_category(policies, "VIP Extended")
+                    if vip_policy:
                         applicable_policy = vip_policy
                         max_window = cast(int, vip_policy.return_window_days)
 
-                # If no VIP policy or not VIP customer, check category policies
+                # Priority 2: Category-specific policies (find maximum window)
                 if not applicable_policy:
-                    for item in items_to_return:
-                        category = item.product_category
-                        if category:
-                            # Find policy for this category
-                            category_policy = next(
-                                (p for p in policies if str(p.category) == str(category)), None
-                            )
-                            if category_policy is not None:
-                                # Extract value from loaded object (type checker sees Column, but runtime is int)
-                                window_days = cast(int, category_policy.return_window_days)
-                                if window_days > max_window:
-                                    max_window = window_days
-                                    applicable_policy = category_policy
-
-                # Fallback to general policy
-                if not applicable_policy:
-                    general_policy = next(
-                        (p for p in policies if str(p.category) == "General"), None
+                    category_policy, category_window = self._find_best_category_policy(
+                        policies, items_to_return
                     )
-                    if general_policy is not None:
+                    if category_policy:
+                        applicable_policy = category_policy
+                        max_window = category_window
+
+                # Priority 3: General policy fallback
+                if not applicable_policy:
+                    general_policy = self._find_policy_by_category(policies, "General")
+                    if general_policy:
                         applicable_policy = general_policy
                         max_window = cast(int, general_policy.return_window_days)
 
