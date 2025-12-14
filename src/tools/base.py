@@ -1,6 +1,6 @@
 """Base tool class for all order return tools"""
 
-from typing import Type
+from typing import ClassVar, Type
 
 from langchain.tools import BaseTool
 from pydantic import BaseModel
@@ -14,7 +14,7 @@ class OrderReturnBaseTool(BaseTool):
     """
 
     # Will be overridden by subclasses
-    args_schema: Type[BaseModel]
+    args_schema: ClassVar[Type[BaseModel]]
 
     def _format_error(self, error: Exception) -> str:
         """Format error message for user-friendly display"""
