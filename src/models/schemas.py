@@ -4,7 +4,7 @@ from datetime import datetime
 from decimal import Decimal
 from typing import List, Optional
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 from src.models.enums import (
     AccountStatus,
@@ -24,6 +24,8 @@ from src.models.enums import (
 class CustomerSchema(BaseModel):
     """Customer data model"""
 
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     email: EmailStr
     first_name: str
@@ -34,13 +36,12 @@ class CustomerSchema(BaseModel):
     fraud_flag: bool = False
     return_count_30d: int = 0
 
-    class Config:
-        from_attributes = True
-
 
 # Order Item Schemas
 class OrderItemSchema(BaseModel):
     """Order item data model"""
+
+    model_config = ConfigDict(from_attributes=True)
 
     id: int
     order_id: int
@@ -52,13 +53,12 @@ class OrderItemSchema(BaseModel):
     is_final_sale: bool = False
     is_returnable: bool = True
 
-    class Config:
-        from_attributes = True
-
 
 # Order Schemas
 class OrderSchema(BaseModel):
     """Order data model"""
+
+    model_config = ConfigDict(from_attributes=True)
 
     id: int
     order_number: str
@@ -70,13 +70,12 @@ class OrderSchema(BaseModel):
     items: List[OrderItemSchema] = []
     customer: Optional[CustomerSchema] = None
 
-    class Config:
-        from_attributes = True
-
 
 # Return Policy Schemas
 class ReturnPolicySchema(BaseModel):
     """Return policy data model"""
+
+    model_config = ConfigDict(from_attributes=True)
 
     id: int
     policy_name: str
@@ -87,13 +86,12 @@ class ReturnPolicySchema(BaseModel):
     conditions: Optional[str] = None
     is_active: bool = True
 
-    class Config:
-        from_attributes = True
-
 
 # RMA Schemas
 class RMASchema(BaseModel):
     """RMA (Return Merchandise Authorization) data model"""
+
+    model_config = ConfigDict(from_attributes=True)
 
     id: int
     rma_number: str
@@ -110,9 +108,6 @@ class RMASchema(BaseModel):
     updated_at: datetime
     escalated: bool = False
     escalation_reason: Optional[str] = None
-
-    class Config:
-        from_attributes = True
 
 
 # Tool Input/Output Schemas
@@ -240,6 +235,8 @@ class EscalateToHumanOutput(BaseModel):
 class ConversationLogSchema(BaseModel):
     """Conversation log data model"""
 
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     session_id: str
     customer_id: Optional[int] = None
@@ -247,6 +244,3 @@ class ConversationLogSchema(BaseModel):
     content: str
     meta_data: Optional[str] = None
     created_at: datetime
-
-    class Config:
-        from_attributes = True
