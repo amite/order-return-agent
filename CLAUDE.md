@@ -91,3 +91,7 @@ The project includes these dev tools in pyproject.toml:
 - `black` for code formatting
 - `ruff` for linting
 - `ipykernel` for Jupyter notebook support
+
+# Rules
+
+*   For any question related to "langchain", "langgraph", "langsmith", or "LCEL", automatically invoke the `docs-langchain` MCP server to find the answer.
