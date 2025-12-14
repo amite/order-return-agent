@@ -1,7 +1,7 @@
 """Email sending and template tools"""
 
 import time
-from typing import Dict, Any
+from typing import Dict, Any, ClassVar
 
 from jinja2 import Template
 from langchain.tools import BaseTool
@@ -44,7 +44,7 @@ class SendEmailTool(BaseTool):
     args_schema: type[BaseModel] = SendEmailInput
 
     # Email templates
-    TEMPLATES = {
+    TEMPLATES: ClassVar[Dict[str, str]] = {
         "return_approved": """
 Dear {{ customer_name }},
 

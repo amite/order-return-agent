@@ -3370,20 +3370,59 @@ _**Agent (model default, mode Agent)**_
 ---
 
 
+Staging all changes, then committing and pushing with a descriptive message.
+
 
 ---
 
 <tool-use data-tool-type="shell" data-tool-name="run_terminal_command_v2">
-<details><summary>Tool use: **run_terminal_command_v2**</summary>
+<details><summary>Tool use: **run_terminal_command_v2** • Run command: cd /home/amite/code/python/order-return-agent && git add .</summary>
 
+```bash
+cd /home/amite/code/python/order-return-agent && git add .
+```
 </details>
 </tool-use>
 
 ---
 
 <tool-use data-tool-type="shell" data-tool-name="run_terminal_command_v2">
-<details><summary>Tool use: **run_terminal_command_v2**</summary>
+<details><summary>Tool use: **run_terminal_command_v2** • Run command: cd /home/amite/code/python/order-return-agent && git status</summary>
 
+```bash
+cd /home/amite/code/python/order-return-agent && git status
+```
+
+```
+On branch main
+Your branch is ahead of 'origin/main' by 5 commits.
+  (use "git push" to publish your local commits)
+
+Changes to be committed:
+  (use "git restore --staged &lt;file&gt;..." to unstage)
+	new file:   .cursor/commands/commit-and-push.md
+	new file:   .specstory/history/2025-12-14_08-06Z-untracked-files-commit-with-summary.md
+	new file:   .specstory/history/2025-12-14_08-14Z-chroma-db-usage-in-project.md
+	new file:   artifacts/wip/PHASE_1_SUMMARY.md
+	new file:   data/chroma_db/2f23a6e0-2343-4b69-a367-b663fc22765a/data_level0.bin
+	new file:   data/chroma_db/2f23a6e0-2343-4b69-a367-b663fc22765a/header.bin
+	new file:   data/chroma_db/2f23a6e0-2343-4b69-a367-b663fc22765a/index_metadata.pickle
+	new file:   data/chroma_db/2f23a6e0-2343-4b69-a367-b663fc22765a/length.bin
+	new file:   data/chroma_db/2f23a6e0-2343-4b69-a367-b663fc22765a/link_lists.bin
+	new file:   data/chroma_db/chroma.sqlite3
+	new file:   learning/README.md
+	new file:   learning/chromadb/README.md
+	new file:   learning/chromadb/api_reference.md
+	new file:   learning/chromadb/scripts/01_basic_usage.py
+	new file:   learning/chromadb/scripts/02_query_examples.py
+	new file:   learning/chromadb/scripts/03_policy_context.py
+	new file:   learning/chromadb/scripts/04_templates.py
+	new file:   learning/chromadb/scripts/05_exception_handling.py
+	new file:   learning/chromadb/scripts/06_complete_demo.py
+	new file:   learning/chromadb/scripts/README.md
+
+
+```
 </details>
 </tool-use>
 
@@ -3393,21 +3432,89 @@ _**Agent (model default, mode Agent)**_
 
 ---
 
+
+Committing with a descriptive message, then pushing:
 
 
 ---
 
 <tool-use data-tool-type="shell" data-tool-name="run_terminal_command_v2">
-<details><summary>Tool use: **run_terminal_command_v2**</summary>
+<details><summary>Tool use: **run_terminal_command_v2** • Run command: cd /home/amite/code/python/order-return-agent && git commit -m "Add comprehensive ChromaDB learning materials and documentation
 
+- Add learning/README.md with overview of learning resources
+- Add learning/chromadb/README.md with complete usage guide
+- Add learning/chromadb/api_reference.md with official API docs from Context7
+- Add 6 example scripts demonstrating ChromaDB usage:
+  - 01_basic_usage.py: Fundamentals (init, ingest, query)
+  - 02_query_examples.py: Various query patterns
+  - 03_policy_context.py: Policy explanations for reason codes
+  - 04_templates.py: Communication templates
+  - 05_exception_handling.py: Exception handling guidance
+  - 06_complete_demo.py: Full workflow demonstration
+- Add scripts/README.md with script documentation
+- All documentation uses Context7 API references for accuracy
+- Scripts are executable and ready to run"</summary>
+
+```bash
+cd /home/amite/code/python/order-return-agent && git commit -m "Add comprehensive ChromaDB learning materials and documentation
+
+- Add learning/README.md with overview of learning resources
+- Add learning/chromadb/README.md with complete usage guide
+- Add learning/chromadb/api_reference.md with official API docs from Context7
+- Add 6 example scripts demonstrating ChromaDB usage:
+  - 01_basic_usage.py: Fundamentals (init, ingest, query)
+  - 02_query_examples.py: Various query patterns
+  - 03_policy_context.py: Policy explanations for reason codes
+  - 04_templates.py: Communication templates
+  - 05_exception_handling.py: Exception handling guidance
+  - 06_complete_demo.py: Full workflow demonstration
+- Add scripts/README.md with script documentation
+- All documentation uses Context7 API references for accuracy
+- Scripts are executable and ready to run"
+```
+
+```
+[main df6167b] Add comprehensive ChromaDB learning materials and documentation
+ 20 files changed, 10450 insertions(+)
+ create mode 100644 .cursor/commands/commit-and-push.md
+ create mode 100644 .specstory/history/2025-12-14_08-06Z-untracked-files-commit-with-summary.md
+ create mode 100644 .specstory/history/2025-12-14_08-14Z-chroma-db-usage-in-project.md
+ create mode 100644 artifacts/wip/PHASE_1_SUMMARY.md
+ create mode 100644 data/chroma_db/2f23a6e0-2343-4b69-a367-b663fc22765a/data_level0.bin
+ create mode 100644 data/chroma_db/2f23a6e0-2343-4b69-a367-b663fc22765a/header.bin
+ create mode 100644 data/chroma_db/2f23a6e0-2343-4b69-a367-b663fc22765a/index_metadata.pickle
+ create mode 100644 data/chroma_db/2f23a6e0-2343-4b69-a367-b663fc22765a/length.bin
+ create mode 100644 data/chroma_db/2f23a6e0-2343-4b69-a367-b663fc22765a/link_lists.bin
+ create mode 100644 data/chroma_db/chroma.sqlite3
+ create mode 100644 learning/README.md
+ create mode 100644 learning/chromadb/README.md
+ create mode 100644 learning/chromadb/api_reference.md
+ create mode 100755 learning/chromadb/scripts/01_basic_usage.py
+ create mode 100755 learning/chromadb/scripts/02_query_examples.py
+ create mode 100755 learning/chromadb/scripts/03_policy_context.py
+ create mode 100755 learning/chromadb/scripts/04_templates.py
+ create mode 100755 learning/chromadb/scripts/05_exception_handling.py
+ create mode 100755 learning/chromadb/scripts/06_complete_demo.py
+ create mode 100644 learning/chromadb/scripts/README.md
+
+```
 </details>
 </tool-use>
 
 ---
 
 <tool-use data-tool-type="shell" data-tool-name="run_terminal_command_v2">
-<details><summary>Tool use: **run_terminal_command_v2**</summary>
+<details><summary>Tool use: **run_terminal_command_v2** • Run command: cd /home/amite/code/python/order-return-agent && git push</summary>
 
+```bash
+cd /home/amite/code/python/order-return-agent && git push
+```
+
+```
+To github.com:amite/order-return-agent.git
+   776ffb0..df6167b  main -&gt; main
+
+```
 </details>
 </tool-use>
 
@@ -3418,6 +3525,113 @@ _**Agent (model default, mode Agent)**_
 ---
 
 
+All changes have been committed and pushed.
+
+**Commit Summary:**
+- 20 files changed, 10,450 insertions
+- Commit hash: `df6167b`
+- Pushed to `origin/main`
+
+**What was committed:**
+- Learning folder structure and documentation
+- 6 example scripts (all executable)
+- API reference documentation
+- ChromaDB data files (vector store)
+
+**Note:** ChromaDB data files (`data/chroma_db/`) were included. These are typically binary files that you might want to add to `.gitignore` in the future, but they're committed now.
+
+The learning materials are now in your repository and ready to use. You can start with:
+```bash
+uv run python learning/chromadb/scripts/06_complete_demo.py
+```
+
+---
+
+_**User**_
+
+/commit-and-push 
+
+---
+
+_**Agent (model default, mode Agent)**_
+
+
+
+---
+
+
+Checking for changes, then committing and pushing:
+
+
+---
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_command_v2">
+<details><summary>Tool use: **run_terminal_command_v2** • Run command: cd /home/amite/code/python/order-return-agent && git status</summary>
+
+```bash
+cd /home/amite/code/python/order-return-agent && git status
+```
+
+```
+On branch main
+Your branch is ahead of 'origin/main' by 1 commit.
+  (use "git push" to publish your local commits)
+
+Changes not staged for commit:
+  (use "git add &lt;file&gt;..." to update what will be committed)
+  (use "git restore &lt;file&gt;..." to discard changes in working directory)
+	modified:   .specstory/history/2025-12-14_08-14Z-chroma-db-usage-in-project.md
+
+no changes added to commit (use "git add" and/or "git commit -a")
+
+```
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Staging, committing, and pushing the changes:
+
+
+---
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_command_v2">
+<details><summary>Tool use: **run_terminal_command_v2** • Run command: cd /home/amite/code/python/order-return-agent && git add . && git commit -m "Update specstory history for ChromaDB learning materials" && git push</summary>
+
+```bash
+cd /home/amite/code/python/order-return-agent && git add . && git commit -m "Update specstory history for ChromaDB learning materials" && git push
+```
+
+```
+[main fe4649f] Update specstory history for ChromaDB learning materials
+ 1 file changed, 419 insertions(+), 1 deletion(-)
+To github.com:amite/order-return-agent.git
+   df6167b..fe4649f  main -&gt; main
+
+```
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+All changes have been committed and pushed.
+
+**Commit Summary:**
+- 1 file changed, 419 insertions
+- Commit hash: `fe4649f`
+- Pushed to `origin/main`
+
+The specstory history file was updated and is now in the repository. Your working tree is clean and all changes are pushed to the remote.
 
 ---
 
