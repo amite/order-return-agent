@@ -75,6 +75,7 @@ def print_agent_response(console: Console, response: str) -> None:
         padding=(1, 2)
     )
     console.print(panel)
+    console.print()  # Add spacing after agent response
 
 
 def print_error(console: Console, message: str, hint: str = None) -> None:
