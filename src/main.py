@@ -4,11 +4,23 @@ import uuid
 from pathlib import Path
 
 from loguru import logger
+from rich.console import Console
 
 from src.agents.return_agent import ReturnAgent
 from src.db.connection import init_database, check_database_exists
 from src.db.seed import seed_database
 from src.config.settings import settings
+from src.ui.console import (
+    print_welcome,
+    get_user_input,
+    print_agent_response,
+    print_error,
+    print_status,
+    show_spinner,
+)
+
+# Create console instance for Rich output
+console = Console()
 
 
 def _setup_logging():
@@ -32,23 +44,7 @@ def _setup_logging():
 
 def _print_welcome():
     """Display welcome message and instructions"""
-    print("\n" + "=" * 70)
-    print("  ORDER RETURN AGENT - Customer Service Assistant".center(70))
-    print("=" * 70)
-    print()
-    print("Welcome! I'm here to help you process your order return.")
-    print()
-    print("To get started, please provide:")
-    print("  • Your order number, OR")
-    print("  • Your email address")
-    print()
-    print("Commands:")
-    print("  /exit  - End the conversation")
-    print("  /help  - Show this message again")
-    print("  /reset - Start a new conversation")
-    print()
-    print("-" * 70)
-    print()
+    print_welcome(console)
 
 
 def main():
@@ -70,7 +66,7 @@ def main():
             logger.info("Database seeded successfully")
     except Exception as e:
         logger.error(f"Failed to initialize database: {e}")
-        print("Error: Failed to initialize database")
+        print_error(console, "Failed to initialize database", hint=str(e))
         return
 
     # Display welcome message
@@ -79,29 +75,31 @@ def main():
     # Initialize agent
     session_id = str(uuid.uuid4())
     logger.info(f"Creating new agent session: {session_id}")
+    print_status(console, f"Session created: {session_id[:8]}...", "success")
 
     try:
         agent = ReturnAgent(session_id=session_id)
     except Exception as e:
         logger.error(f"Failed to initialize agent: {e}")
-        print(f"Error: Failed to start agent: {e}")
-        print("Please ensure Ollama is running locally on http://localhost:11434")
+        print_error(
+            console,
+            "Failed to start agent",
+            hint="Please ensure Ollama is running on http://localhost:11434"
+        )
         return
 
     # Main conversation loop
     while True:
         try:
             # Get user input
-            user_input = input("\nYou: ").strip()
+            user_input = get_user_input(console)
 
             if not user_input:
                 continue
 
             # Handle commands
             if user_input.lower() == "/exit":
-                print(
-                    "\nThank you for using our service. Your session has been saved. Goodbye!"
-                )
+                print_status(console, "Thank you for using our service. Goodbye!", "success")
                 logger.info(f"Session {session_id} ended by user")
                 break
 
@@ -112,26 +110,29 @@ def main():
             if user_input.lower() == "/reset":
                 session_id = str(uuid.uuid4())
                 agent = ReturnAgent(session_id=session_id)
-                print("\nConversation reset. Let's start over!")
+                print_status(console, "Conversation reset. Let's start over!", "success")
                 _print_welcome()
                 continue
 
             # Process user input through agent
             logger.debug(f"User input: {user_input}")
-            response = agent.run(user_input)
 
-            # Display agent response
-            print(f"\nAgent: {response}")
+            # Show spinner while agent processes
+            with show_spinner(console, "🤔 Agent is thinking..."):
+                response = agent.run(user_input)
+
+            # Display agent response with Rich formatting
+            print_agent_response(console, response)
 
         except KeyboardInterrupt:
-            print("\n\nSession interrupted. Your conversation has been saved.")
+            print_status(console, "Session interrupted. Your conversation has been saved.", "info")
             logger.info(f"Session {session_id} interrupted by user")
             break
 
         except Exception as e:
             logger.error(f"Unexpected error in main loop: {e}")
-            print(f"\nError: {e}")
-            print("Attempting to continue...")
+            print_error(console, str(e), hint="Check logs/agent.log for details")
+            print_status(console, "Attempting to continue...", "warning")
 
 
 if __name__ == "__main__":
