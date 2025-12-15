@@ -1,5 +1,7 @@
 """Rich console utilities for Order Return Agent CLI"""
 
+from typing import Optional
+
 from rich.console import Console
 from rich.panel import Panel
 from rich.markdown import Markdown
@@ -78,7 +80,7 @@ def print_agent_response(console: Console, response: str) -> None:
     console.print()  # Add spacing after agent response
 
 
-def print_error(console: Console, message: str, hint: str = None) -> None:
+def print_error(console: Console, message: str, hint: Optional[str] = None) -> None:
     """Display error in red panel with optional hint
 
     Shows error messages in a prominent red-bordered panel with
