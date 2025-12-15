@@ -762,15 +762,210 @@ Checking for linter errors:
 
 ---
 
-<tool-use data-tool-type="unknown" data-tool-name="read_lints">
+<tool-use data-tool-type="generic" data-tool-name="read_lints">
 <details>
-<summary>Tool use: **read_lints**</summary>
+          <summary>Tool use: **read_lints** • Read lints for 1 file</summary>
+      
+Lint paths:
 
-Status: **loading**
+- `/home/amite/code/python/order-return-agent/src/tools/eligibility_tools.py`
+
+Lint results
+
+Lint errors for `/home/amite/code/python/order-return-agent/src/tools/eligibility_tools.py`
+
+
+| Message | Range | Severity |
+|-------|-------|----------|
+| Invalid conditional operand of type "Column[str]"<br/>  Method __bool__ for type "Column[str]" returns type "Never" rather than "bool" | 77:20-77:41 | DIAGNOSTIC_SEVERITY_ERROR |
 
 
 </details>
 </tool-use>
+
+---
+
+
+
+---
+
+
+Fixing the linter error by checking for None instead of using a boolean check:
+
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file_v2">
+<details><summary>Tool use: **read_file_v2** • Read file: /home/amite/code/python/order-return-agent/src/tools/eligibility_tools.py</summary>
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+Additional data:
+
+```json
+{
+  "codeblockId": "4c3b9cd9-3115-448a-98b1-46201bafcda7"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_lints">
+<details>
+<summary>Tool use: **read_lints**</summary>
+
+
+Parameters:
+
+```json
+{
+  "paths": [
+    "/home/amite/code/python/order-return-agent/src/tools/eligibility_tools.py"
+  ]
+}
+```
+Result:
+
+```json
+{
+  "linterErrorsByFile": [
+    {
+      "relativeWorkspacePath": "/home/amite/code/python/order-return-agent/src/tools/eligibility_tools.py"
+    }
+  ]
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Verifying the refactored code:
+
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file_v2">
+<details><summary>Tool use: **read_file_v2** • Read file: /home/amite/code/python/order-return-agent/src/tools/eligibility_tools.py</summary>
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+
+
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file_v2">
+<details><summary>Tool use: **read_file_v2** • Read file: /home/amite/code/python/order-return-agent/src/tools/eligibility_tools.py</summary>
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+
+
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file_v2">
+<details><summary>Tool use: **read_file_v2** • Read file: /home/amite/code/python/order-return-agent/src/tools/eligibility_tools.py</summary>
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Refactoring complete. Summary of changes:
+
+## Refactoring complete
+
+### Changes made
+
+1. Added two helper methods:
+   - `_find_policy_by_category()`: Finds a policy by category name
+   - `_find_best_category_policy()`: Finds the category policy with the maximum return window using `max()` with a key function
+
+2. Refactored policy selection logic (lines 189-217):
+   - Reduced nesting from 4-5 levels to 2-3 levels
+   - Replaced nested loops with helper method calls
+   - Used `max()` to find the best category policy
+   - Added early `continue` statements to reduce cognitive load
+   - Clarified priority order with comments (Priority 1, 2, 3)
+
+### Benefits
+
+- Improved readability: Clear priority order and helper methods
+- Reduced complexity: Maximum nesting depth reduced from 5 to 3
+- Better maintainability: Policy finding logic is reusable
+- Functional approach: Uses `max()` instead of manual iteration
+- No linter errors: Fixed SQLAlchemy column boolean check
+
+The code now follows a clear priority order: VIP Extended → Category-specific → General, with each step using helper methods instead of deeply nested conditionals.
+
+---
+
+_**User**_
+
+/commit-and-push 
 
 ---
 
